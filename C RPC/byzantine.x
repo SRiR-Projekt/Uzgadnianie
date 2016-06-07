@@ -12,5 +12,3 @@ program BYZANTINE {
 } = 1;
 
 }=0x44553344;
-
-

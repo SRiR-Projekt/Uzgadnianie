@@ -61,14 +61,17 @@ void GetTheOrdersOthersHaveGot()
 		int majorityOrder;
 		for(i=0;i<4;i++)
 		{
+			//dont send to initiator and self
 			if((i != 0) && (i != (HOSTID -1)))
 			{
 				fprintf(stderr,"Asking node with IP:%s about the order it got\n",nodeIPs[i]);
+				clnt = clnt_create (nodeIPs[i], BYZANTINE, BYZANTINEVERS, "udp");
 				result_2 = sendmeorderyougot_1(NULL, clnt);
 				if (result_2 == (ORDER_MESSAGE *) NULL)
 					clnt_perror (clnt, "call failed");
 				else
 				{
+					//received order from 
 					ordersFromPeers[j]=result_2->orderValue;
 					fprintf(stderr,"Data received node with IP:%s and the order is:%d\n",nodeIPs[i],result_2->orderValue);
 				        j++; 
@@ -76,8 +79,9 @@ void GetTheOrdersOthersHaveGot()
 			}	
 		}	
 
+		//find the majority of the orders you have received and declare that as the order you will follow
 		if(orderFromInitiator == ordersFromPeers[0])
-
+			//announce the majority order
 			majorityOrder = orderFromInitiator;	
 		else if(orderFromInitiator == ordersFromPeers[1])
 			majorityOrder = orderFromInitiator;
@@ -89,7 +93,47 @@ void GetTheOrdersOthersHaveGot()
 	}
 
 
-int main (int argc, char *argv[])
+void sendOrderToNextLevel()
+	{
+		CLIENT *clnt;
+		fprintf(stderr,"%s","Initiating the send of order\n");
+		
+		ORDER_MESSAGE receiveorder_1_arg;
+		int n = !lastOrderSent;
+		lastOrderSent = n;
+		fprintf(stderr,"Order to send = %d \n",n);
+		orderToSend[0]=orderToSend[1]=orderToSend[2]=n;
+		if(ISBYZANTINE)
+		{
+			fprintf(stderr,"I am byzantine so i will send confusing orders \n");
+			orderToSend[1] = !n;
+		}
+		receiveorder_1_arg.srcID= HOSTID;
+		//not using this in the sample
+		receiveorder_1_arg.sourceIP =NULL;
+		int i ;
+		for(i=0;i<3;i++)
+		{
+			fprintf(stderr,"Sending order : %d to IP:%s\n", orderToSend[i],nodeIPs[i+1]);	
+			clnt = clnt_create (nodeIPs[i+1], BYZANTINE, BYZANTINEVERS, "udp");
+			if (clnt == NULL) {
+			clnt_pcreateerror (host);
+			exit (1);
+			}
+			receiveorder_1_arg.orderValue = orderToSend[i];
+			void *result_1;
+			result_1 = receiveorder_1(&receiveorder_1_arg, clnt);
+			if (result_1 == (void *) NULL) {
+				clnt_perror (clnt, "call failed");
+			}
+			clnt_destroy (clnt);
+		}
+	}
+
+
+
+int
+main (int argc, char *argv[])
 {
 	pthread_t client,server;
 	
