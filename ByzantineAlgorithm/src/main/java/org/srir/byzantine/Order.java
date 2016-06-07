@@ -8,12 +8,12 @@ import java.util.Map.Entry;
 
 public enum Order {
 
-	ATTACK,
-	RETREAT;
+	ATAK,
+	ODWROT;
 	
 	public static Order getDefaultOrder()
 	{
-		return Order.RETREAT;
+		return Order.ODWROT;
 	}
 	
 	public static Order getMostFrequentOrder(List<Order> orders)
