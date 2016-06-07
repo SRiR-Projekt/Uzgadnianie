@@ -30,13 +30,13 @@ public class ProcessManager {
 		Configuration config;
 		try
 		{
-			config = new PropertiesConfiguration("newtork.cfg");
+			config = new PropertiesConfiguration("network.cfg");
 		}
 		catch (ConfigurationException e)
 		{
 			try
 			{
-				config = new PropertiesConfiguration("newtork.cfg.default");
+				config = new PropertiesConfiguration("network.cfg.default");
 			}
 			catch (ConfigurationException e2)
 			{

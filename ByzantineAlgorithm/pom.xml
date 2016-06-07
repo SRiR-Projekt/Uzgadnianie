@@ -55,8 +55,8 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.bits.byzantine.DC_Byzantine_Main</mainClass>
-                            <packageName>org.bits.byzantine</packageName>
+                            <mainClass>org.srir.byzantine.ByzantineMain</mainClass>
+                            <packageName>org.srir.byzantine</packageName>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
