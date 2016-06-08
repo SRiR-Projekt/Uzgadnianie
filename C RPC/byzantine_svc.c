@@ -7,6 +7,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#ifndef SIG_PF
+#define SIG_PF void(*)(int)
+#endif
 
 static void byzantine_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
@@ -28,6 +31,11 @@ static void byzantine_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		local = (char *(*)(char *, struct svc_req *)) receiveorder_1_svc;
 		break;
 
+	case SendMeOrderYouGot:
+		_xdr_argument = (xdrproc_t) xdr_void;
+		_xdr_result = (xdrproc_t) xdr_ORDER_MESSAGE;
+		local = (char *(*)(char *, struct svc_req *)) sendmeorderyougot_1_svc;
+		break;
 
 	default:
 		svcerr_noproc (transp);
@@ -49,3 +57,36 @@ static void byzantine_1(struct svc_req *rqstp, register SVCXPRT *transp)
 	return;
 }
 
+int serverFunc ()
+{
+	register SVCXPRT *transp;
+
+	pmap_unset (BYZANTINE, BYZANTINEVERS);
+
+	fprintf(stderr,"%s","entering the server code\n");
+
+	transp = svcudp_create(RPC_ANYSOCK);
+	if (transp == NULL) {
+		fprintf (stderr, "%s", "cannot create udp service.");
+		exit(1);
+	}
+	if (!svc_register(transp, BYZANTINE, BYZANTINEVERS, byzantine_1, IPPROTO_UDP)) {
+		fprintf (stderr, "%s", "unable to register (BYZANTINE, BYZANTINEVERS, udp).");
+		exit(1);
+	}
+	
+
+	transp = svctcp_create(RPC_ANYSOCK, 0, 0);
+	if (transp == NULL) {
+		fprintf (stderr, "%s", "cannot create tcp service.");
+		exit(1);
+	}
+	if (!svc_register(transp, BYZANTINE, BYZANTINEVERS, byzantine_1, IPPROTO_TCP)) {
+		fprintf (stderr, "%s", "unable to register (BYZANTINE, BYZANTINEVERS, tcp).");
+		exit(1);
+	}
+
+	svc_run ();
+	fprintf (stderr, "%s", "svc_run returned");
+	exit (1);
+}

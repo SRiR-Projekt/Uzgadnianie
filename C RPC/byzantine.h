@@ -1,51 +1,68 @@
-#include "byzantine.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <rpc/pmap_clnt.h>
-#include <string.h>
-#include <memory.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#ifndef _BYZANTINE_H_RPCGEN
+#define _BYZANTINE_H_RPCGEN
+
+#include <rpc/rpc.h>
+#include <pthread.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
-static void byzantine_1(struct svc_req *rqstp, register SVCXPRT *transp)
-{
-	union {
-		ORDER_MESSAGE receiveorder_1_arg;
-	} argument;
-	char *result;
-	xdrproc_t _xdr_argument, _xdr_result;
-	char *(*local)(char *, struct svc_req *);
+struct ORDER_MESSAGE {
+	int orderValue;
+	int srcID;
+	char *sourceIP;
+};
+typedef struct ORDER_MESSAGE ORDER_MESSAGE;
 
-	switch (rqstp->rq_proc) {
-	case NULLPROC:
-		(void) svc_sendreply (transp, (xdrproc_t) xdr_void, (char *)NULL);
-		return;
+#define BYZANTINE 0x44553344
+#define BYZANTINEVERS 1
 
-	case receiveOrder:
-		_xdr_argument = (xdrproc_t) xdr_ORDER_MESSAGE;
-		_xdr_result = (xdrproc_t) xdr_void;
-		local = (char *(*)(char *, struct svc_req *)) receiveorder_1_svc;
-		break;
+#if defined(__STDC__) || defined(__cplusplus)
+#define receiveOrder 1
+extern int HOSTID;
+extern int ISBYZANTINE;
+extern int orderFromInitiator;
+extern int isOrderReceived;
+extern int initiator;
+extern  void * receiveorder_1(ORDER_MESSAGE *, CLIENT *);
+extern  void * receiveorder_1_svc(ORDER_MESSAGE *, struct svc_req *);
+#define SendMeOrderYouGot 2
+extern  ORDER_MESSAGE * sendmeorderyougot_1(void *, CLIENT *);
+extern  ORDER_MESSAGE * sendmeorderyougot_1_svc(void *, struct svc_req *);
+extern int byzantine_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
+extern void* clientFunc();
+extern int serverFunc ();
+#else
+#define receiveOrder 1
+extern int HOSTID;
+extern int ISBYZANTINE;
+extern int orderFromInitiator;
+extern int isOrderReceived;
+extern int initiator;
+extern  void * receiveorder_1();
+extern  void * receiveorder_1_svc();
+#define SendMeOrderYouGot 2
+extern  ORDER_MESSAGE * sendmeorderyougot_1();
+extern  ORDER_MESSAGE * sendmeorderyougot_1_svc();
+extern int byzantine_1_freeresult ();
+extern void* clientFunc();
+extern int serverFunc ();
+#endif
 
 
-	default:
-		svcerr_noproc (transp);
-		return;
-	}
-	memset ((char *)&argument, 0, sizeof (argument));
-	if (!svc_getargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) &argument)) {
-		svcerr_decode (transp);
-		return;
-	}
-	result = (*local)((char *)&argument, rqstp);
-	if (result != NULL && !svc_sendreply(transp, (xdrproc_t) _xdr_result, result)) {
-		svcerr_systemerr (transp);
-	}
-	if (!svc_freeargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) &argument)) {
-		fprintf (stderr, "%s", "unable to free arguments");
-		exit (1);
-	}
-	return;
+
+#if defined(__STDC__) || defined(__cplusplus)
+extern  bool_t xdr_ORDER_MESSAGE (XDR *, ORDER_MESSAGE*);
+
+#else
+extern bool_t xdr_ORDER_MESSAGE ();
+
+#endif
+
+#ifdef __cplusplus
 }
+#endif
 
+#endif
